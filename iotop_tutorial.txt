@@ -1,0 +1,67 @@
+iotop is an open source and free utility similar to top command, that provides an easy way to monitor Linux Disk I/O usage details and prints a table of existing I/O utilization by process or threads on the systems.
+
+as root user:
+1.) yum install iotop -y 
+
+
+
+2.) setup cron to run iotop
+crontab -e
+
+#Splunk IOTOP
+* * * * *  /usr/sbin/iotop -botqqq --iter=60 | grep -P "\d\d\.\d\d K/s" >> /var/log/iotop.log
+
+
+3.) setup log rotate for iotop.log
+
+vi /etc/logrotate.d/iotop
+# add the following
+/var/log/iotop.log {
+  rotate 3
+  size 50M
+  daily
+  maxage 15
+  compress
+  notifempty
+  missingok
+}
+
+
+4.) setup splunk input monitor to read the iotop.log: 
+note: adjust index as needed
+
+[monitor:///var/log/iotop.log]
+disabled = false
+sourcetype = iotop
+index = main
+blacklist = \*.gz
+
+
+5.) setup props.conf for this sourcetype : 
+
+[iotop]
+TIME_FORMAT = %H:%M:%S
+MAX_TIMESTAMP_LOOKAHEAD = 10
+LINE_BREAKER=([\r\n]+)
+SHOULD_LINEMERGE=false
+NO_BINARY_CHECK=true
+DATETIME_CONFIG=CURRENT
+TZ=UTC
+
+
+restart splunk
+./splunk restart
+
+
+6.) run a search to find the data in splunk and identify which TID/COMMAND is putting heavy Disk READ/WRITE
+
+index=main sourcetype=iotop source=*/var/log/iotop.log*
+|rex "\d{2}:\d{2}:\d{2}\s+(?<TID>\d+)\s+(?<PRIO>\S+)\s+(?<USER>\S+)\s+(?<DISK_READ>\S+)\s+(?<runit>\S+)\s+(?<DISK_WRITE>\S+)\s+(?<wunit>\S+)\s+(?<SWAPIN>\S+)\s+\%\s+(?<IO>\S+)\s+\%\s+(?<COMMAND>.+)"
+| stats max(DISK_READ) as DISK_READ max(DISK_WRITE) as DISK_WRITE max(SWAPIN) as SWAPIN max(IO) as IO by host USER COMMAND 
+| sort -IO
+
+
+index=main sourcetype=iotop source=*/var/log/iotop.log*
+|rex "\d{2}:\d{2}:\d{2}\s+(?<TID>\d+)\s+(?<PRIO>\S+)\s+(?<USER>\S+)\s+(?<DISK_READ>\S+)\s+(?<runit>\S+)\s+(?<DISK_WRITE>\S+)\s+(?<wunit>\S+)\s+(?<SWAPIN>\S+)\s+\%\s+(?<IO>\S+)\s+\%\s+(?<COMMAND>.+)"
+| timechart span=1m max(DISK_READ) as DISK_READ max(DISK_WRITE) as DISK_WRITE max(IO) as IO by COMMAND 
+| eval IO_perc_ceiling=100
