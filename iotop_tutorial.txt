@@ -62,7 +62,7 @@ restart splunk
 ./splunk restart
 
 
-6.) run a search to find the data in splunk and identify which TID/COMMAND is putting IO usage  READ/WRITEs
+6.) run a search to find the data in splunk and identify which TID/COMMAND is putting heavy IO usage  READ/WRITEs
 
 index=main sourcetype=iotop source=*/var/log/iotop.log*
 |rex "\d{2}:\d{2}:\d{2}\s+(?<TID>\d+)\s+(?<PRIO>\S+)\s+(?<USER>\S+)\s+(?<DISK_READ>\S+)\s+(?<runit>\S+)\s+(?<DISK_WRITE>\S+)\s+(?<wunit>\S+)\s+(?<SWAPIN>\S+)\s+\%\s+(?<IO>\S+)\s+\%\s+(?<COMMAND>.+)"
