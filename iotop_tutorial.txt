@@ -51,7 +51,7 @@ blacklist = \*.gz
 [iotop]
 TIME_FORMAT = %H:%M:%S
 MAX_TIMESTAMP_LOOKAHEAD = 10
-LINE_BREAKER=([\r\n]+)
+LINE_BREAKER=([\r\n]+)\d{2}\:\d{2}\:\d{2}
 SHOULD_LINEMERGE=false
 NO_BINARY_CHECK=true
 DATETIME_CONFIG=CURRENT
