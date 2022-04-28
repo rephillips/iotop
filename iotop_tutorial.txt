@@ -74,3 +74,10 @@ index=main sourcetype=iotop source=*/var/log/iotop.log*
 |rex "\d{2}:\d{2}:\d{2}\s+(?<TID>\d+)\s+(?<PRIO>\S+)\s+(?<USER>\S+)\s+(?<DISK_READ>\S+)\s+(?<runit>\S+)\s+(?<DISK_WRITE>\S+)\s+(?<wunit>\S+)\s+(?<SWAPIN>\S+)\s+\%\s+(?<IO>\S+)\s+\%\s+(?<COMMAND>.+)"
 | timechart span=1m max(DISK_READ) as DISK_READ max(DISK_WRITE) as DISK_WRITE max(IO) as IO by COMMAND 
 | eval IO_perc_ceiling=100
+
+
+
+disk I/O stress (to get some data into this log), you can use the excellent stress-ng tool which can simulate all kinds of resource stress on your host
+yum install stress-ng
+# start stress testing for high I/O load, start 5 workers that will continually read/write temp files and simulate high IO load
+root@min1> stress-ng -d 5 --timeout 10
