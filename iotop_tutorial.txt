@@ -9,7 +9,7 @@ the owner of the thread with TID (USER)
 the disk read per second (DISK READ)
 the disk write per second (DISK WRITE)
 the percentage of time the thread spent while swapping in (SWAPIN)
-the percentage of time the thread spent waiting on I/O (IO>)
+the percentage of time the thread spent waiting on I/O (IO)
 the command the thread is running (COMMAND)
 
 as root user:
